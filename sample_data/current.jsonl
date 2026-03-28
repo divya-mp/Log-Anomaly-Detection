@@ -1,0 +1,6 @@
+{"timestamp":"2026-03-24T09:00:00+00:00","source_ip":"10.0.0.10","actor":"deploy-bot","event_type":"deploy","severity":"info","status":200,"message":"deployment completed"}
+{"timestamp":"2026-03-24T09:05:00+00:00","source_ip":"10.0.0.99","actor":"unknown","event_type":"login","severity":"medium","status":401,"message":"failed password for invalid user root"}
+{"timestamp":"2026-03-24T09:06:00+00:00","source_ip":"10.0.0.99","actor":"unknown","event_type":"login","severity":"medium","status":401,"message":"failed password for invalid user root"}
+{"timestamp":"2026-03-24T09:07:00+00:00","source_ip":"10.0.0.99","actor":"unknown","event_type":"login","severity":"medium","status":401,"message":"failed password for invalid user root"}
+{"timestamp":"2026-03-24T02:15:00+00:00","source_ip":"10.0.0.50","actor":"svc-prod","event_type":"privilege_change","severity":"critical","status":403,"message":"unauthorized sudo privilege escalation attempt"}
+{"timestamp":"2026-03-24T09:20:00+00:00","source_ip":"10.0.0.51","actor":"eve","event_type":"exfiltration","severity":"high","status":500,"message":"possible data exfiltration to unknown host"}

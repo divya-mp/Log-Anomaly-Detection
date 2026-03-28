@@ -1,0 +1,8 @@
+{"timestamp":"2026-03-23T09:00:00+00:00","source_ip":"10.0.0.10","actor":"deploy-bot","event_type":"deploy","severity":"info","status":200,"message":"deployment completed"}
+{"timestamp":"2026-03-23T09:05:00+00:00","source_ip":"10.0.0.11","actor":"alice","event_type":"login","severity":"info","status":200,"message":"user login succeeded"}
+{"timestamp":"2026-03-23T09:06:00+00:00","source_ip":"10.0.0.11","actor":"alice","event_type":"read","severity":"info","status":200,"message":"read config map"}
+{"timestamp":"2026-03-23T10:00:00+00:00","source_ip":"10.0.0.12","actor":"bob","event_type":"login","severity":"info","status":200,"message":"user login succeeded"}
+{"timestamp":"2026-03-23T10:02:00+00:00","source_ip":"10.0.0.12","actor":"bob","event_type":"write","severity":"info","status":201,"message":"updated deployment manifest"}
+{"timestamp":"2026-03-23T10:15:00+00:00","source_ip":"10.0.0.13","actor":"carol","event_type":"http_get","severity":"info","status":200,"message":"GET /health"}
+{"timestamp":"2026-03-23T10:16:00+00:00","source_ip":"10.0.0.13","actor":"carol","event_type":"http_get","severity":"info","status":200,"message":"GET /metrics"}
+{"timestamp":"2026-03-23T11:00:00+00:00","source_ip":"10.0.0.14","actor":"dave","event_type":"read","severity":"info","status":200,"message":"read secrets metadata"}
