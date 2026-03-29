@@ -58,6 +58,9 @@ class Anomaly:
 
 
 def load_events(path: str | Path) -> list[LogEvent]:
+    '''
+    loads log file and parse each line
+    '''
     events: list[LogEvent] = []
     with open(path, "r", encoding="utf-8") as handle:
         for raw_line in handle:
@@ -69,6 +72,9 @@ def load_events(path: str | Path) -> list[LogEvent]:
 
 
 def parse_line(line: str) -> LogEvent:
+    '''
+    extracts relevant data in each line in log to create LogEvent object
+    '''
     if line.startswith("{"):
         payload = json.loads(line)
         timestamp = _parse_timestamp(payload.get("timestamp"))
@@ -83,7 +89,7 @@ def parse_line(line: str) -> LogEvent:
             raw={k: str(v) for k, v in payload.items()},
         )
 
-    match = COMMON_LOG_RE.search(line)
+    match = COMMON_LOG_RE.search(line) # parses apache/ngix style logs
     if match:
         status = _safe_int(match.group("status"))
         method = match.group("method")
@@ -103,6 +109,10 @@ def parse_line(line: str) -> LogEvent:
 
 
 def build_baseline(events: Iterable[LogEvent]) -> Baseline:
+    '''
+    Frequency of each event type, source ip, actor, status code, time. 
+    Stored as Basline obj
+    '''
     event_types: Counter[str] = Counter()
     ip_counts: Counter[str] = Counter()
     actor_counts: Counter[str] = Counter()
@@ -130,27 +140,34 @@ def build_baseline(events: Iterable[LogEvent]) -> Baseline:
 
 
 def detect_anomalies(current_events: Iterable[LogEvent], baseline: Baseline) -> list[Anomaly]:
+    '''
+    Evalutes current events against baseline events using rules
+    '''
     events = list(current_events)
-    ip_burst = Counter(event.source_ip for event in events)
-    actor_burst = Counter(event.actor for event in events)
+    ip_burst = Counter(event.source_ip for event in events) # freq for each ip
+    actor_burst = Counter(event.actor for event in events) # freq for each actor
     anomalies: list[Anomaly] = []
 
     for event in events:
         score = 0.0
         reasons: list[str] = []
 
+        #event type does not exists in baseline
         if baseline.event_types[event.event_type] == 0:
             score += 4.0
             reasons.append("new event type")
 
+        # if status code does not exists
         if event.status is not None and baseline.status_counts[event.status] == 0 and event.status >= 400:
             score += 3.0
             reasons.append(f"unseen error status {event.status}")
 
+        #  timestamp doesnt occur
         if baseline.hour_counts[event.timestamp.hour] == 0:
             score += 2.5
             reasons.append("activity at an unseen hour")
 
+        # if source ip of event has spike
         if _is_burst(
             observed=ip_burst[event.source_ip],
             historical=baseline.ip_counts[event.source_ip],
@@ -160,6 +177,7 @@ def detect_anomalies(current_events: Iterable[LogEvent], baseline: Baseline) -> 
             score += 2.5
             reasons.append(f"source IP spike from {event.source_ip}")
 
+        # if actor of event has spike
         if event.actor != "unknown" and _is_burst(
             observed=actor_burst[event.actor],
             historical=baseline.actor_counts[event.actor],
@@ -169,15 +187,18 @@ def detect_anomalies(current_events: Iterable[LogEvent], baseline: Baseline) -> 
             score += 2.0
             reasons.append(f"actor spike for {event.actor}")
 
+        # severity
         if event.severity in {"critical", "high"}:
             score += 2.0
             reasons.append(f"high severity {event.severity}")
 
+        # every matched word score is increased
         matched_keywords = _matched_keywords(event.message)
         if matched_keywords:
             score += 1.5 + 0.5 * len(matched_keywords)
             reasons.append("suspicious terms: " + ", ".join(sorted(matched_keywords)))
 
+        # Adds event as anomaly obj
         if score >= 3.0:
             anomalies.append(Anomaly(event=event, score=round(score, 2), reasons=reasons))
 
@@ -185,6 +206,10 @@ def detect_anomalies(current_events: Iterable[LogEvent], baseline: Baseline) -> 
 
 
 def format_report(anomalies: Iterable[Anomaly]) -> str:
+    '''
+    Readable out for each anomaly
+    '''
+    
     anomalies = list(anomalies)
     if not anomalies:
         return "No anomalies detected."
@@ -202,7 +227,10 @@ def format_report(anomalies: Iterable[Anomaly]) -> str:
     return "\n".join(lines)
 
 
-def summarize_by_reason(anomalies: Iterable[Anomaly]) -> dict[str, int]:
+def summarise_by_reason(anomalies: Iterable[Anomaly]) -> dict[str, int]:
+    '''
+    summarises reason for each anomaly by how frequent they occur
+    '''
     summary: dict[str, int] = defaultdict(int)
     for anomaly in anomalies:
         for reason in anomaly.reasons:
@@ -238,11 +266,17 @@ def _severity_from_status(status: int | None) -> str:
 
 
 def _matched_keywords(message: str) -> set[str]:
+    '''
+    message matches any of the keywords mentioned
+    '''
     lowered = message.lower()
     return {keyword for keyword in SUSPICIOUS_KEYWORDS if keyword in lowered}
 
 
 def _is_burst(observed: int, historical: int, baseline_total: int, current_total: int) -> bool:
+    '''
+    if current event execeeds threshold is burst
+    '''
     if observed < 3 or current_total == 0:
         return False
 

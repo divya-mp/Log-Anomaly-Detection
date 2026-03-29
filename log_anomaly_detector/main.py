@@ -15,7 +15,8 @@ def main() -> None:
     current_events = load_events(args.input)
     baseline = build_baseline(baseline_events)
     anomalies = detect_anomalies(current_events, baseline)
-
+    
+    # if json them dumps anomaly to json
     if args.json:
         payload = {
             "anomaly_count": len(anomalies),
@@ -38,7 +39,7 @@ def main() -> None:
         print(json.dumps(payload, indent=2))
         return
 
-    print((anomalies))
+    print(format_report(anomalies))
 
 
 if __name__ == "__main__":

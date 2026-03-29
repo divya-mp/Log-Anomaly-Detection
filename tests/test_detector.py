@@ -13,12 +13,18 @@ class DetectorTests(unittest.TestCase):
         self.assertEqual(event.timestamp.hour, 9)
 
     def test_parse_common_log_line(self) -> None:
+        '''
+        
+        '''
         event = parse_line('192.168.0.5 - - [24/Mar/2026:09:00:00 +0000] "POST /admin HTTP/1.1" 403 123')
         self.assertEqual(event.event_type, "http_post")
         self.assertEqual(event.status, 403)
         self.assertEqual(event.severity, "medium")
 
     def test_detect_anomalies(self) -> None:
+        '''
+        Anomaly detected
+        '''
         baseline = build_baseline(load_events("sample_data/baseline.jsonl"))
         current = load_events("sample_data/current.jsonl")
         anomalies = detect_anomalies(current, baseline)
